@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
 
-cap = cv2.VideoCapture('../data/WeChatSight419.mp4')
+cap = cv2.VideoCapture('../data/WeChatSight420_clip.mp4')
 fourcc = cv2.VideoWriter_fourcc('m','p','4','v')
-out = cv2.VideoWriter('../results/output_MOG2.m4v',fourcc, 20.0, (480,640), False)
+out = cv2.VideoWriter('../results/output_MOG2_clip.m4v',fourcc, 20.0, (480,640), False)
 fgbg = cv2.createBackgroundSubtractorMOG2(5, 15, True) #history, varThreshold, bShadowDetection
 while True:
 	ret, frame = cap.read()
