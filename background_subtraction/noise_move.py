@@ -1,9 +1,21 @@
 import cv2
 import numpy as np
-from matplotlib import pyplot as plt
-img = cv2.imread('../results/MOG2_original_800.png')
-#img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-blur = cv2.blur(img,(6,6))
-cv2.imwrite('../results/mean_filter.png', blur)
-plt.imshow(blur),plt.colorbar(),plt.show()
+cap = cv2.VideoCapture('../results/output_CandyEdge.m4v')
+fourcc = cv2.VideoWriter_fourcc('m','p','4','v')
+out = cv2.VideoWriter('../results/EDGE_MOG2.m4v',fourcc, 20.0, (480,640), False)
+fgbg = cv2.createBackgroundSubtractorMOG2(10, 25, True) #history, varThreshold, bShadowDetection
+i = 0
+while True:
+	i += 1
+	ret, frame = cap.read()
+	height, width, layers = frame.shape
+	fgmask = fgbg.apply(frame)
+	blur = cv2.GaussianBlur(fgmask, (5, 5), 0)
+	cv2.imshow('frame', blur)
+	out.write(fgmask)
+	if cv2.waitKey(1) & 0xFF == ord('q'):
+		break
+cap.release()
+out.release()
+cv2.destroyALLWindows()

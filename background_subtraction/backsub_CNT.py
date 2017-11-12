@@ -4,7 +4,7 @@ import cv2
 cap = cv2.VideoCapture('../data/WeChatSight420.mp4')
 fourcc = cv2.VideoWriter_fourcc('m','p','4','v')
 out = cv2.VideoWriter('../results/output_CNT.m4v',fourcc, 20.0, (480,640), False)
-fgbg = cv2.bgsegm.createBackgroundSubtractorCNT(15, True, 15*60, True)
+fgbg = cv2.bgsegm.createBackgroundSubtractorCNT(10, True, 15*20, True)
 #minStability, useHistory, maxStability, isParallel
 i = 0
 while True:
