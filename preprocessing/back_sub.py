@@ -9,9 +9,9 @@ def back_Sub(fpath, mode):
     total_frame = cap.get(cv2.CAP_PROP_FRAME_COUNT)
     print(total_frame)
     if mode == 'MOG2':
-        fgbg = cv2.createBackgroundSubtractorMOG2(30, 15, True) #history, varThreshold, bShadowDetection
+        fgbg = cv2.createBackgroundSubtractorMOG2(500, 16, True) #history, varThreshold, bShadowDetection
     elif mode == 'MOG':
-        fgbg = cv2.bgsegm.createBackgroundSubtractorMOG(5, 3, 0.7, 0) #history, nmixture, backgroundRatio, noiseSigma
+        fgbg = cv2.bgsegm.createBackgroundSubtractorMOG(5, 5, 0.7, 0) #history, nmixture, backgroundRatio, noiseSigma
     elif mode == 'GMG':
         # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
         fgbg = cv2.bgsegm.createBackgroundSubtractorGMG(2,0.5)#initializationFrame, decisionThreshold
@@ -29,6 +29,7 @@ def back_Sub(fpath, mode):
         pass
     out = cv2.VideoWriter(output_video, fourcc, 20.0, (544, 960), False)
 
+
     try:
         while cap.isOpened():
             current_frame = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
@@ -39,7 +40,11 @@ def back_Sub(fpath, mode):
                 height, width, layers = frame.shape
                 # fgmask = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 #print(height, width, layers)
-                fgmask = fgbg.apply(frame)
+                blur = cv2.GaussianBlur(frame, (5, 5), 0)
+                fgmask = fgbg.apply(blur)
+                # _,fgmask = cv2.threshold(fgmask,100,255,cv2.THRESH_BINARY)
+                # open_kernel = np.ones((1, 1), np.uint8)
+                # fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, open_kernel)
                 # nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(fgmask, connectivity=8)
                 # sizes = stats[1:, -1]; nb_components = nb_components - 1
                 # min_size = 200
@@ -55,9 +60,19 @@ def back_Sub(fpath, mode):
                     # cv2.imwrite('../results/image/background.png',background)
                 # elif current_frame > 0:
                     # fgmask = np.subtract(fgmask, background)
-                if current_frame == 800:
-                    cv2.imwrite('../results/image/original_{}.png'.format(current_frame), frame)
-                    cv2.imwrite('../results/image/{}_{}.png'.format(mode, current_frame), fgmask)
+                # im_copy = fgmask.copy()
+
+                # h, w = fgmask.shape[:2]
+                # mask = np.zeros((h+2, w+2), np.uint8)
+
+                # cv2.floodFill(im_copy, mask, (h/2,w/2), 255)
+
+                # im_copy_inv = cv2.bitwise_not(im_copy)
+
+                # output = fgmask | im_copy_inv
+
+                cv2.imwrite('../results/image/original/original_{}.png'.format(current_frame), frame)
+                cv2.imwrite('../results/image/back_sub/{}_{}.png'.format(mode, current_frame), fgmask)
                 out.write(fgmask)
                 cv2.imshow('frame', fgmask)
                 print(current_frame)
@@ -75,9 +90,9 @@ def back_Sub(fpath, mode):
         cv2.destroyAllWindows()
 
 def main():
-    video_name = 'CannyEdge.m4v'
+    video_name = 'input.mp4'
     mode = sys.argv[1]
-    input_path = '../results/video/'
+    input_path = '../data/'
     fpath = input_path + video_name
     back_Sub(fpath, mode)
 
