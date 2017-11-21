@@ -30,10 +30,13 @@ def noise_Remove(fpath):
                 height, width, layers = frame.shape
 
                 fgmask = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                ret, fgmask = cv2.threshold(fgmask, 1, 255, cv2.THRESH_BINARY)
+                # fgmask = cv2.fastNlMeansDenoising(fgmask)
+                # cv2.imshow('frame', fgmask)
                 # cv2.imwrite('../results/image/CNT/{}.png'.format(current_frame), frame)
                 # background = np.zeros(fgmask.shape, np.uint8)
-                gray = fgmask.copy()
-                img2 = np.zeros(gray.shape, np.uint8)
+                # gray = fgmask.copy()
+                # img2 = np.zeros(gray.shape, np.uint8)
                 # im2, cnts, hierarchy = cv2.findContours(gray,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
                 # for cnt in cnts:
                 #     # if 200<cv2.contourArea(cnt):
@@ -51,22 +54,47 @@ def noise_Remove(fpath):
                 # cv2.imshow('after', image)
                 #cv2.bitwise_not(gray2,gray2,mask)
                 #print(height, width, layers)
-                nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(fgmask, connectivity=4)
-                sizes = stats[1:, -1]; nb_components = nb_components - 1
-                min_size = 150
-                for i in range(0, nb_components):
-                    if sizes[i] >= min_size:
-                        img2[output == i + 1] = 255
-                cv2.imshow('after', img2)
-                # if current_frame  < 124 and current_frame > 4:
+                # nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(fgmask, connectivity=4)
+                # sizes = stats[1:, -1]; nb_components = nb_components - 1
+                # min_size = 100
+                # for i in range(0, nb_components):
+                #     if sizes[i] >= min_size:
+                #         img2[output == i + 1] = 255
+                # cv2.imshow('after', img2)
+                # if current_frame == 0:
+                #     background = fgmask
+                # if current_frame  < 40:
                 #     background = cv2.bitwise_or(background, fgmask)
-                #     fgmask = cv2.bitwise_xor(background, fgmask)
                 # else:
-                #     fgmask = cv2.bitwise_xor(background, fgmask)
-                # if current_frame > 5 and current_frame < 124:
-                #     background = cv2.bitwise_or(background, fgmask)
+                #     temp = cv2.bitwise_and(background, fgmask)
+                #     fgmask = fgmask - temp
+                #     cv2.namedWindow('image',cv2.WINDOW_NORMAL)
+                #     cv2.resizeWindow('image', 600,600)
+                #     cv2.imshow('image', fgmask)
+                minLineLength=10
+                new = np.zeros(fgmask.shape[:2], np.uint8)
+                lines = cv2.HoughLinesP(image=fgmask,rho=1,theta=np.pi/180, threshold=10,lines=np.array([]), minLineLength=minLineLength,maxLineGap=200)
 
-
+                a,b,c = lines.shape
+                for i in range(a):
+                    x = lines[i][0][0] - lines [i][0][2]
+                    y = lines[i][0][1] - lines [i][0][3]
+                    if x!= 0:
+                        if abs(y/x) <1:
+                            cv2.line(new, (lines[i][0][0], lines[i][0][1]), (lines[i][0][2], lines[i][0][3]), (255, 255, 255), 1)
+                temp = cv2.bitwise_and(new, fgmask)
+                fgmask = cv2.subtract(fgmask,temp)
+                
+                                    
+                se = cv2.getStructuringElement(cv2.MORPH_ELLIPSE , (1,2))
+                fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, se)
+                mask = np.ones(fgmask.shape[:2],np.uint8) * 255
+                mask[:, :100] = 0
+                mask[:, 400:-1]=0
+                fgmask = cv2.bitwise_and(fgmask, mask)
+                cv2.namedWindow('image',cv2.WINDOW_NORMAL)
+                cv2.resizeWindow('image', 600,600)
+                cv2.imshow('image', fgmask)
                 # # if current_frame == 0:
                 # #     cv2.imwrite('../results/image/background_{}.png'.format(current_frame), fgmask)
                 # if current_frame > 5:
@@ -96,7 +124,7 @@ def noise_Remove(fpath):
         cv2.destroyAllWindows()
 
 def main():
-    video_name = 'CNT.m4v'
+    video_name = 'test.m4v'
     input_path = '../results/video/'
     fpath = input_path + video_name
     noise_Remove(fpath)

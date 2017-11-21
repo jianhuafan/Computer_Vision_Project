@@ -9,7 +9,7 @@ def back_Sub(fpath, mode):
     total_frame = cap.get(cv2.CAP_PROP_FRAME_COUNT)
     print(total_frame)
     if mode == 'MOG2':
-        fgbg = cv2.createBackgroundSubtractorMOG2(500, 16, True) #history, varThreshold, bShadowDetection
+        fgbg = cv2.createBackgroundSubtractorMOG2(400, 16, True) #history, varThreshold, bShadowDetection
     elif mode == 'MOG':
         fgbg = cv2.bgsegm.createBackgroundSubtractorMOG(5, 5, 0.7, 0) #history, nmixture, backgroundRatio, noiseSigma
     elif mode == 'GMG':
@@ -22,7 +22,7 @@ def back_Sub(fpath, mode):
         exit(1)
 
     fourcc = cv2.VideoWriter_fourcc('m','p','4','v')
-    output_video = '../results/video/{}.m4v'.format(mode)
+    output_video = '../results/video/tow_{}.m4v'.format(mode)
     try:
         os.remove(output_video)
     except OSError:
@@ -40,8 +40,8 @@ def back_Sub(fpath, mode):
                 height, width, layers = frame.shape
                 # fgmask = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 #print(height, width, layers)
-                blur = cv2.GaussianBlur(frame, (5, 5), 0)
-                fgmask = fgbg.apply(blur)
+                # blur = cv2.GaussianBlur(frame, (5, 5), 0)
+                fgmask = fgbg.apply(frame)
                 # _,fgmask = cv2.threshold(fgmask,100,255,cv2.THRESH_BINARY)
                 # open_kernel = np.ones((1, 1), np.uint8)
                 # fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, open_kernel)
@@ -90,7 +90,7 @@ def back_Sub(fpath, mode):
         cv2.destroyAllWindows()
 
 def main():
-    video_name = 'input.mp4'
+    video_name = 'input2.mp4'
     mode = sys.argv[1]
     input_path = '../data/'
     fpath = input_path + video_name
